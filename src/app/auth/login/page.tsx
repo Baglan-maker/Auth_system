@@ -9,6 +9,7 @@ const LoginPage = () => {
       <LanguageSwitcher />
     </div>
   );
+  
 };
 
 export default LoginPage;

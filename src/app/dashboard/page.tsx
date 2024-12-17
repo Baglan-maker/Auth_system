@@ -1,4 +1,5 @@
 import ProtectedRoute from "../components/ProtectedRoute";
+import React, { ReactNode } from 'react';
 
 const Dashboard = () => {
     return (

@@ -17,4 +17,3 @@ import { I18nextProvider } from 'react-i18next';
       </html>
     );
   }
-  

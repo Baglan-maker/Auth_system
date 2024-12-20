@@ -1,5 +1,5 @@
 import ProtectedRoute from "../components/ProtectedRoute";
-import React, { ReactNode } from 'react';
+import React from 'react';
 
 const Dashboard = () => {
     return (

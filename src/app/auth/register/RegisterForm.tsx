@@ -3,30 +3,34 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useRouter } from "next/navigation";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography, Alert } from "@mui/material";
 import * as yup from "yup";
 import { useTranslation } from "react-i18next";
 import ReCAPTCHA from "react-google-recaptcha";
-import axios from "../../lib/axios"
+import axios from "../../lib/axios";
 import { useUsers } from "../../lib/useUsers";
 
-const schema = yup.object({
-  iin: yup
-    .string()
-    .matches(/^\d{12}$/, "ИИН должен содержать 12 цифр")
-    .required("ИИН обязателен"),
-  fullName: yup.string().required("ФИО обязательно"),
-  birthDate: yup
-    .string()
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "Введите дату в формате ГГГГ-ММ-ДД")
-    .required("Дата рождения обязательна"),
-  city: yup.string().required("Город обязателен"),
-  password: yup
-    .string()
-    .min(6, "Пароль должен содержать минимум 6 символов")
-    .required("Пароль обязателен"),
-});
+const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
+
+const getValidationSchema = (t: (key: string) => string) => {
+  return yup.object({
+    iin: yup
+      .string()
+      .matches(/^\d{12}$/, t("ИИН должен содержать 12 цифр"))
+      .required(t("ИИН обязателен")),
+    fullName: yup.string().required(t("ФИО обязательно")),
+    birthDate: yup
+      .string()
+      .matches(/^\d{4}-\d{2}-\d{2}$/, t("Введите дату в формате ГГГГ-ММ-ДД"))
+      .required(t("Дата рождения обязательна")),
+    city: yup.string().required(t("Город обязателен")),
+    password: yup
+      .string()
+      .min(6, t("Пароль должен содержать минимум 6 символов"))
+      .required(t("Пароль обязателен")),
+  });
+};
 
 type Inputs = {
   iin: string;
@@ -36,10 +40,16 @@ type Inputs = {
   password: string;
 };
 
-const RegisterForm: React.FC = () => {
+type RegisterFormProps = {
+  onLoginRedirect: () => void; 
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  onLoginRedirect,
+}) => {
   const { t } = useTranslation("register");
-  const router = useRouter();
-  const { users, isLoading, isError } = useUsers(); 
+  const schema = getValidationSchema(t);
+  const { users, isLoading, isError } = useUsers();
   const {
     register,
     handleSubmit,
@@ -49,36 +59,48 @@ const RegisterForm: React.FC = () => {
   });
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertSeverity, setAlertSeverity] = useState<"info" | "success" | "error" | undefined>(
+    undefined
+  );
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!captchaToken) {
-      alert("Пожалуйста, пройдите CAPTCHA.");
+      setAlertMessage("Пожалуйста, пройдите CAPTCHA.");
+      setAlertSeverity("error");
       return;
     }
 
     if (isLoading) {
-      alert("Данные загружаются, попробуйте позже.");
+      setAlertMessage("Данные загружаются, попробуйте позже.");
+      setAlertSeverity("info");
       return;
     }
 
     if (isError || !users) {
-      alert("Ошибка загрузки данных пользователей.");
+      setAlertMessage("Ошибка загрузки данных пользователей.");
+      setAlertSeverity("error");
       return;
     }
 
     const existingUser = users.find((user: { iin: string }) => user.iin === data.iin);
     if (existingUser) {
-      alert("Пользователь с данным ИИН уже зарегистрирован.");
+      setAlertMessage("Пользователь с данным ИИН уже зарегистрирован.");
+      setAlertSeverity("error");
       return;
     }
 
     try {
-      await axios.post("https://675ca3b5fe09df667f6468f8.mockapi.io/users", data);
-      alert("Регистрация успешна!");
-      router.push("/auth/login");
+      await axios.post(`${apiBaseUrl}`, data);
+      setAlertMessage("Регистрация успешна!");
+      setAlertSeverity("success");
+      setTimeout(() => {
+        onLoginRedirect();
+      }, 700);
     } catch (error) {
       console.error("Ошибка регистрации", error);
-      alert("Не удалось зарегистрировать пользователя.");
+      setAlertMessage("Не удалось зарегистрировать пользователя.");
+      setAlertSeverity("error");
     }
   };
 
@@ -97,9 +119,13 @@ const RegisterForm: React.FC = () => {
         backgroundColor: "#fff",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={2} textAlign="center">
-        {t("Регистрация")}
-      </Typography>
+      <Typography variant="h5">{t("Регистрация")}</Typography>
+
+      {alertMessage && (
+        <Alert severity={alertSeverity} sx={{ mb: 2 }}>
+          {alertMessage}
+        </Alert>
+      )}
 
       <TextField
         label={t("ИИН")}
@@ -107,7 +133,6 @@ const RegisterForm: React.FC = () => {
         {...register("iin")}
         error={!!errors.iin}
         helperText={errors.iin?.message}
-        margin="normal"
       />
       <TextField
         label={t("ФИО")}
@@ -115,17 +140,15 @@ const RegisterForm: React.FC = () => {
         {...register("fullName")}
         error={!!errors.fullName}
         helperText={errors.fullName?.message}
-        margin="normal"
       />
       <TextField
-        label={t("Дата рождения (ГГГГ-ММ-ДД)")}
+        label={t("Дата рождения")}
         type="date"
         InputLabelProps={{ shrink: true }}
         fullWidth
         {...register("birthDate")}
         error={!!errors.birthDate}
         helperText={errors.birthDate?.message}
-        margin="normal"
       />
       <TextField
         label={t("Город")}
@@ -133,7 +156,6 @@ const RegisterForm: React.FC = () => {
         {...register("city")}
         error={!!errors.city}
         helperText={errors.city?.message}
-        margin="normal"
       />
       <TextField
         label={t("Пароль")}
@@ -142,37 +164,31 @@ const RegisterForm: React.FC = () => {
         {...register("password")}
         error={!!errors.password}
         helperText={errors.password?.message}
-        margin="normal"
       />
 
-      <Box my={2} display="flex" justifyContent="center">
+      <Box my={1} display="flex" justifyContent="center">
         <Box
           sx={{
-            border: "1px solid #E0E0E0",
-            p: 1,
-            borderRadius: 1,
-            display: "inline-block",
+            display: "flex", 
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
           <ReCAPTCHA
-            sitekey="6LfD850qAAAAAGybpHakR8Di6r3g2O-dFCatnLmj"
+            sitekey={recaptchaSiteKey}
             onChange={(token) => setCaptchaToken(token)}
           />
         </Box>
       </Box>
 
-      <Button type="submit" variant="contained" fullWidth sx={{ mt: 1 }}>
+      <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
         {t("Регистрация")}
       </Button>
 
       <Box textAlign="center" mt={2}>
-        <Typography variant="body2" color="text.secondary">
-          {t("Уже есть аккаунт?")}{" "}
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => router.push("/auth/login")}
-          >
+        <Typography variant="body2">
+          {t("Уже есть аккаунт?")}
+          <Button variant="text" size="medium" onClick={onLoginRedirect}>
             {t("Войти")}
           </Button>
         </Typography>
@@ -182,3 +198,4 @@ const RegisterForm: React.FC = () => {
 };
 
 export default RegisterForm;
+

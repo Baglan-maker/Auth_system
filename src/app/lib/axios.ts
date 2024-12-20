@@ -1,8 +1,10 @@
 import axios from "axios";
 import { useAuthStore } from "./useAuthStore";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
+
 const api = axios.create({
-  baseURL: "https://675ca3b5fe09df667f6468f8.mockapi.io/",
+  baseURL: apiBaseUrl,
 });
 
 api.interceptors.request.use((config) => {
@@ -12,7 +14,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-console.log(useAuthStore.getState().tokens);
 
 api.interceptors.response.use(
   (response) => response,
@@ -38,7 +39,7 @@ api.interceptors.response.use(
             return api(originalRequest);
           }
         }
-      } catch (error) {
+      } catch {
         useAuthStore.getState().clearTokens();
         window.location.href = "/";
       }

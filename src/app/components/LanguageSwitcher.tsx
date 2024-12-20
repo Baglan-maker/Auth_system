@@ -21,7 +21,6 @@ const LanguageSwitcher: React.FC = () => {
     >
       <Button
         variant={i18n.language === 'ru' ? 'contained' : 'outlined'} 
-        color="primary"
         onClick={() => switchLanguage('ru')}
         sx={{
           borderRadius: 20, 
@@ -33,7 +32,6 @@ const LanguageSwitcher: React.FC = () => {
       </Button>
       <Button
         variant={i18n.language === 'en' ? 'contained' : 'outlined'} 
-        color="primary"
         onClick={() => switchLanguage('en')}
         sx={{
           borderRadius: 20, 

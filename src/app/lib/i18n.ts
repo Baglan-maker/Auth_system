@@ -38,7 +38,6 @@ if (!i18n.isInitialized) {
 export const loadNamespace = async (namespace: string) => {
   const resources = await import(`../locales/en/${namespace}.json`);
   i18n.addResourceBundle('en', namespace, resources.default, true, true);
-  console.log(`Namespace "${namespace}" loaded.`);
 };
 
 export default i18n;

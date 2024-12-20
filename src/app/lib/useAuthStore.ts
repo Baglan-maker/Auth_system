@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ tokens: newTokens, isAuthenticated: true });
       localStorage.setItem("tokens", JSON.stringify(newTokens));
       return true;
-    } catch (error) {
+    } catch {
       get().clearTokens();
       return false;
     }

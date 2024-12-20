@@ -1,4 +1,0 @@
-
-
-const RECAPTCHA_SECRET_KEY = "6LfD850qAAAAAIe1jrCwLsvlH2itVdAacslnhROP";
-

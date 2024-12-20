@@ -1,5 +1,6 @@
-'use client'
-import React, { ReactNode } from 'react';
+'use client';
+
+import React from 'react';
 import { useAuthStore } from "../lib/useAuthStore";
 import { useRouter } from 'next/navigation';
 import { useEffect } from "react";

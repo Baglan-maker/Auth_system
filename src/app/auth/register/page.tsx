@@ -1,15 +1,18 @@
+'use client';
 import React from "react";
 import RegisterForm from "./RegisterForm";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
-import { Box } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const AuthPage = () => {
+  const router = useRouter();
+
   return (
     <div>
-        <RegisterForm />
-        <Box sx={{ mt: "auto", mb: -2 }}>
+        <RegisterForm 
+          onLoginRedirect={() => router.push("/auth/login")}
+        />
           <LanguageSwitcher />
-        </Box>
         </div>
   );
 };

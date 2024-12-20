@@ -6,5 +6,13 @@
   "Регистрация": "Registration",
   "ФИО": "Full Name",
   "Дата рождения (ДД-ММ-ГГГГ)": "Birth Day (DD-MM-YYYY)",
-  "Уже есть аккаунт?": "Already have an account?"
+  "Уже есть аккаунт?": "Already have an account?",
+  "ИИН должен содержать 12 цифр": "UIN must contain 12 digits",
+  "ИИН обязателен": "UIN is required",
+  "ФИО обязательно": "Full Name is required",
+  "Введите дату в формате ДД-ММ-ГГГГ": "Enter the date in the format DD-MM-YYYY",
+  "Дата рождения обязательна": "Birth Day is required",
+  "Город обязателен": "City is required",
+  "Пароль должен содержать минимум 6 символов": "The password must contain at least 6 characters",
+  "Пароль обязателен": "password is required"
 }
